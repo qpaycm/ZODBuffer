@@ -16,7 +16,7 @@ constructed by passing another storage, as in::
 
     import ZODBuffer
 	# init ZODBuffer class by giving it JSON objects dict and delimeter of 1 which means you want to put each object in separate database file
-    zodBuffer = ZODBuffer(json.loads({'object1':{'cell1':'value', 'cell2':'value',...}, 'object2':{'cell1':'value', 'cell2':'value',...}...}), 1)
+    zodBuffer = ZODBuffer.ZODBuffer(json.loads({'object1':{'cell1':'value', 'cell2':'value',...}, 'object2':{'cell1':'value', 'cell2':'value',...}...}), 1)
 	zodBuffer.CreateDatabases('mytestdb-', 'buffer', '[$]', 'RootOfRoots')	#	name	prefix	exclude		rootofrootsName
 
 .. -> src
