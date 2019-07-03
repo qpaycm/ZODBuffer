@@ -16,7 +16,7 @@ entry_points = """
 HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.txt").read_text()
-name, version = 'ZODBuffer', '1.0.0'
+name, version = 'ZODBuffer', '1.0.1'
 description="ZODB Database file splitter",
 long_description=README,
 long_description_content_type="text/markdown",
