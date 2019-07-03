@@ -89,8 +89,8 @@ class ZODBuffer():
 	
 	
 	def DropTables(self, folder = '/home/ubuntu/qpserver/'):
-		self.initDB(self.rootofrootsName)
+		self.InitDB(self.rootofrootsName)
 		for fname in self.root[self.rootofrootsName]:
 			os.system('rm -rf '+ folder + fname+'.*')
 			os.system('rm -rf '+ folder + self.rootofrootsName +'.*')
-		self.closeDB()
+		self.CloseDB()
