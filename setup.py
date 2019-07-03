@@ -3,10 +3,9 @@ import pathlib
 from setuptools import setup, find_packages
 
 install_requires = [
-    'setuptools',
-    're',
-    'ZODB',
-    'zope.interface',
+	'setuptools',
+	'ZODB',
+	'zope.interface',
 	'zc.bz2storage',
 	'transaction',
 ]
