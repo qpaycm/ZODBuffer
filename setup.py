@@ -14,12 +14,8 @@ entry_points = """
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
-# The text of the README file
-README = (HERE / "README.txt").read_text()
 name, version = 'ZODBuffer', '1.0.1'
 description="ZODB Database file splitter",
-long_description=README,
-long_description_content_type="text/markdown",
 url="https://github.com/qpaycm/ZODBuffer",
 
 setup(
@@ -45,7 +41,7 @@ setup(
         "Topic :: Software Development :: Testing",
     ],
     packages=[name],
-	package_dir={'':'src'},
+    package_dir={'':'src'},
     install_requires=install_requires,
     zip_safe=False,
     entry_points=entry_points,
