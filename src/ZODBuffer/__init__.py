@@ -15,9 +15,10 @@ class ZODBuffer():
 	#	For example, if you have about 5GB data growing yearly, you want to split it to small fs files
 	#	so your http users could download small packs of specific data they want to monitor without overloading 
 	#	server too much on every fs open big file. You can set the delimeter to split objects at specific size
-	def __init__(self, objects, delimeter = 100):
+	def __init__(self, objects, delimeter = 100, rootofrootsName = 'RootOfRoots'):
 		self._timer = str(int(time.time()))
 		self.rootofroots = {}
+		self.rootofrootsName = rootofrootsName
 		self.objects_counter = len(objects.items())
 		self.objects = objects
 		if 0 <= delimeter < self.objects_counter:
