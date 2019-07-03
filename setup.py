@@ -6,7 +6,6 @@ install_requires = [
 	'setuptools',
 	'ZODB',
 	'zope.interface',
-	'zc.bz2storage',
 	'transaction',
 ]
 
