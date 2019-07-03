@@ -16,7 +16,7 @@ implementations that provides a split of a database file.
     
 ### Usage
     
-The primary storage is ``ZODBuffer.ZODBuffer(objects, delimeter)``.  
+The primary usage is ``ZODBuffer.ZODBuffer(objects, delimeter)``.  
 It is used as a splitter around a lower-level storage.  From Python, 
 it is constructed by passing another storage, as in from ZODB import FileStorage, DB
 
