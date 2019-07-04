@@ -18,6 +18,7 @@ class ZODBuffer():
 	def __init__(self, objects, delimeter = 100, rootofrootsName = 'RootOfRoots'):
 		self._timer = str(int(time.time()))
 		self.rootofroots = {}
+		self.delimeter = delimeter
 		self.rootofrootsName = rootofrootsName
 		self.objects_counter = len(objects.items())
 		self.objects = objects
