@@ -3,6 +3,7 @@ import re
 import sys
 import time
 
+from itertools import islice
 from ZODB import FileStorage, DB
 
 import zc.bz2storage
@@ -31,20 +32,18 @@ class ZODBuffer():
 		self.rootofrootsName = rootofrootsName
 		pages = 1
 		counter = 0
-		self.fname = self.AddNewTable(self.dbname, pages)
-		for key,val in self.objects.items():
-			if counter > 1 and counter % self.delimeter == 0:
-				pages = pages + 1
-				counter = 1
-				self.CloseDB()
-				self.fname = self.AddNewTable(self.dbname, pages)	#	create new database .fs file for each buffer
-			#	INSERT INTO NEW TABLE
-			tmpkey = re.sub(exclud, '', key)		#	remove forbidden symbols from the key
-			bfname = prefix + tmpkey				#	forming unique buffer name
-			self.root[bfname] = {self._timer:val}	#	the actual writing of the data to the corresponding file
-			self.SetRootOfRoots(tmpkey, prefix, counter)	#	form the database of databases
-			counter = counter + 1
-		self.CloseDB()
+		for item in self.SplitDict(self.objects):
+			self.fname = self.AddNewTable(self.dbname, pages)	#	create new collection
+			counter = 0											#	documents counter 
+			#	INSERT DOCUMENTS INTO NEWLY CREATED COLLECTION
+			for key,val in item.items():
+				tmpkey = re.sub(exclud, '', key)				#	remove forbidden symbols from the key
+				bfname = prefix + tmpkey						#	forming unique buffer name
+				self.root[bfname] = {self._timer:val}			#	the actual writing of the data to the corresponding file
+				self.SetRootOfRoots(tmpkey, prefix, counter)	#	form the database of databases
+				counter = counter + 1
+			self.CloseDB()
+			pages = pages + 1
 		#	create and save the database of databases and close the connection
 		self.InitDB(rootofrootsName)
 		self.root[rootofrootsName] = self.rootofroots
@@ -80,6 +79,12 @@ class ZODBuffer():
 		self.rootofroots[self.fname] = {}
 		self.rootofroots[self.fname]['fname'] = self.fname
 		return self.fname
+	
+	
+	def SplitDict(self, data, SIZE=100):
+		it = iter(data)
+		for i in range(0, len(data), SIZE):
+			yield {k:data[k] for k in islice(it, SIZE)}
 	
 	
 	def CloseDB(self):
