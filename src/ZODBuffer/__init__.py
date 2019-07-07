@@ -32,11 +32,11 @@ class ZODBuffer():
 		self.rootofrootsName = rootofrootsName
 		pages = 1
 		counter = 0
-		for item in chunks(self.objects.items(), self.delimeter):
+		for item in chunks(self.objects, self.delimeter):
 			self.fname = self.AddNewTable(self.dbname, pages)	#	create new collection
 			counter = 0						#	documents counter 
 			#	INSERT DOCUMENTS INTO NEWLY CREATED COLLECTION
-			for key,val in item.items():
+			for key,val in item:
 				tmpkey = re.sub(exclud, '', key)				#	remove forbidden symbols from the key
 				bfname = prefix + tmpkey						#	forming unique buffer name
 				self.root[bfname] = {self._timer:val}			#	the actual writing of the data to the corresponding file
