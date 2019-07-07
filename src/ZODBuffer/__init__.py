@@ -34,14 +34,7 @@ class ZODBuffer():
 		counter = 0
 		for item in self.SplitDict(self.objects):
 			self.fname = self.AddNewTable(self.dbname, pages)	#	create new collection
-			counter = 0											#	documents counter 
-			#	INSERT DOCUMENTS INTO NEWLY CREATED COLLECTION
-			for key,val in item.items():
-				tmpkey = re.sub(exclud, '', key)				#	remove forbidden symbols from the key
-				bfname = prefix + tmpkey						#	forming unique buffer name
-				self.root[bfname] = {self._timer:val}			#	the actual writing of the data to the corresponding file
-				self.SetRootOfRoots(tmpkey, prefix, counter)	#	form the database of databases
-				counter = counter + 1
+			self.LoopItem(item, prefix, exclud)
 			self.CloseDB()
 			pages = pages + 1
 		#	create and save the database of databases and close the connection
@@ -85,6 +78,17 @@ class ZODBuffer():
 		it = iter(data)
 		for i in range(0, len(data), SIZE):
 			yield {k:data[k] for k in islice(it, SIZE)}
+	
+	
+	def LoopItem(self, item, prefix, exclud):
+		counter = 0											#	documents counter 
+		#	INSERT DOCUMENTS INTO NEWLY CREATED COLLECTION
+		for key,val in item.items():
+			tmpkey = re.sub(exclud, '', key)				#	remove forbidden symbols from the key
+			bfname = prefix + tmpkey						#	forming unique buffer name
+			self.root[bfname] = {self._timer:val}			#	the actual writing of the data to the corresponding file
+			self.SetRootOfRoots(tmpkey, prefix, counter)	#	form the database of databases
+			counter = counter + 1
 	
 	
 	def CloseDB(self):
