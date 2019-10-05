@@ -36,8 +36,9 @@ class ZODBuffer():
 	
 	def GetCollectionBySymbol(self, symbol):
 		self.InitDB(self._prefix + symbol)
+		print(symbol)
 		for col in self.root:
-			print("{}:\n\t{}:\n\t\t{}".format(symbol, col, self.root[col]))
+			print("\t{}:\n\t\t{}".format(col, self.root[col]))
 	
 	
 	def InitDB(self, fname):
