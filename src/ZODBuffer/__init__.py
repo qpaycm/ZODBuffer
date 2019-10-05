@@ -11,53 +11,39 @@ import transaction
 
 
 class ZODBuffer():
-	#	ZODBuffer class is a buffers class for ZODB
 	#	The goal is to split the data between the different database files
 	#	For example, if you have about 5GB data growing yearly, you want to split it to small fs files
 	#	so your http users could download small packs of specific data they want to monitor without overloading 
-	#	server too much on every fs open big file. You can set the delimeter to split objects at specific size
-	def __init__(self, objects, delimeter = 100, rootofrootsName = 'RootOfRoots'):
+	#	server too much on every fs open file. Every object is a separate .fs file(actually 4 files which grows 1Kb per update)
+	def __init__(self, objects, prefix = 'bf', exclude = '[$]'):
 		self._timer = str(int(time.time()))
-		self.rootofroots = {}
-		self.delimeter = delimeter
-		self.rootofrootsName = rootofrootsName
-		self.objects_counter = len(objects.items())
-		self.objects = objects
-		if 0 <= delimeter < self.objects_counter:
-			self.delimeter = delimeter
+		self._counter = len(objects.items())
+		self._objects = objects
+		self._prefix = prefix
+		self._exclude = exclude
+	
+	#	update data structure with timestamp
+	def UpdateObjects(self):
+		for pair in self._objects:
+			tmpkey = re.sub(self._exclude, '', pair)		#	remove forbidden symbols from the key
+			bfname = self._prefix + tmpkey				#	forming unique buffer name
+			self.InitDB(bfname)					#	open ZDOB collection
+			self.root[self._timer] = self._objects[pair]		#	the actual writing of the data to the corresponding file
+			self.CloseDB()						#	close ZDOB connection and commit transaction
+			#print("{} : {}".format(pair, self._objects[pair]))
+		print("Counter:{}".format(self._counter))
 	
 	
-	def CreateDatabases(self, dbname, prefix = 'bf', exclud = '[$]', rootofrootsName = 'RootOfRoots'):
-		self.dbname = dbname
-		self.rootofrootsName = rootofrootsName
-		pages = 1
-		counter = 0
-		for item in self.SplitDict(self.objects):
-			self.fname = self.AddNewTable(self.dbname, pages)	#	create new collection
-			self.LoopItem(item, prefix, exclud)
-			self.CloseDB()
-			pages = pages + 1
-		#	create and save the database of databases and close the connection
-		self.InitDB(rootofrootsName)
-		self.root[rootofrootsName] = self.rootofroots
-		self.CloseDB()
-	
-	
-	def SetRootOfRoots(self, key, prefix, counter):
-		if 'symbols' in self.rootofroots[self.fname]:
-			self.rootofroots[self.fname]['symbols'] = key +','+ self.rootofroots[self.fname]['symbols']
-		else:
-			self.rootofroots[self.fname]['symbols'] = key
-		if 'tables' in self.rootofroots[self.fname]:
-			self.rootofroots[self.fname]['tables'] = prefix+ key +','+ self.rootofroots[self.fname]['tables']
-		else:
-			self.rootofroots[self.fname]['tables'] = prefix+ key
-		self.rootofroots[self.fname]['counter'] = counter
+	def GetCollectionBySymbol(self, symbol):
+		self.InitDB(self._prefix + symbol)
+		for col in self.root:
+			print("{}:\n\t{}:\n\t\t{}".format(symbol, col, self.root[col]))
 	
 	
 	def InitDB(self, fname):
 		#	create storage from compressed data
 		self.storage = zc.bz2storage.Bz2Storage(FileStorage.FileStorage(fname+'.fs'))
+		#print(self.storage)
 		#	create DB that uses our storage
 		self.db = DB(self.storage)
 		#	open DB connection object
@@ -65,43 +51,23 @@ class ZODBuffer():
 		#	get the root access
 		self.root = self.connection.root()
 	
-	
-	def AddNewTable(self, text, pages):
-		self.fname = text + str(pages)
-		self.InitDB(self.fname)
-		self.rootofroots[self.fname] = {}
-		self.rootofroots[self.fname]['fname'] = self.fname
-		return self.fname
-	
-	
-	def SplitDict(self, data, SIZE=100):
+	#	split objects into chunks of defined size
+	def chunks(self, data, SIZE=100):
 		it = iter(data)
 		for i in range(0, len(data), SIZE):
 			yield {k:data[k] for k in islice(it, SIZE)}
 	
 	
-	def LoopItem(self, item, prefix, exclud):
-		counter = 0											#	documents counter 
-		#	INSERT DOCUMENTS INTO NEWLY CREATED COLLECTION
-		for key,val in item.items():
-			tmpkey = re.sub(exclud, '', key)				#	remove forbidden symbols from the key
-			bfname = prefix + tmpkey						#	forming unique buffer name
-			self.root[bfname] = {self._timer:val}			#	the actual writing of the data to the corresponding file
-			self.SetRootOfRoots(tmpkey, prefix, counter)	#	form the database of databases
-			counter = counter + 1
-	
-	
 	def CloseDB(self):
 		transaction.commit()
-		print(self.root.items())
+		#print(self.root.items())
 		self.connection.close()
 		self.db.close()
 		self.storage.close()
 	
 	
-	def DropTables(self, folder = '/home/ubuntu/qpserver/'):
-		self.InitDB(self.rootofrootsName)
-		for fname in self.root[self.rootofrootsName]:
-			os.system('rm -rf '+ folder + fname+'.*')
-			os.system('rm -rf '+ folder + self.rootofrootsName +'.*')
-		self.CloseDB()
+	def DropTables(self, folder = '/home/ubuntu/folder/'):
+		for pair in self._objects:
+			tmpkey = re.sub(self._exclude, '', pair)		#	remove forbidden symbols from the key
+			bfname = self._prefix + tmpkey				#	forming unique buffer name
+			os.system('rm -rf '+ folder + bfname+'.*')
